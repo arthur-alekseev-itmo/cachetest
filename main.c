@@ -10,7 +10,7 @@
 #define LOW_RATIO 1.06
 #define HIGH_RATIO 1.15
 #define ITERATIONS 8192
-#define TABLE_REFINEMENT_ATTEMPTS 60
+#define TABLE_REFINEMENT_ATTEMPTS 15
 #define SMALL_VALUE_FINDING_ATTEMPTS 100
 
 
@@ -21,6 +21,7 @@ int64_t nanosecond_counter(void) {
 }
 
 typedef struct {
+    size_t offset;
     int iterations;
     int stride;
     int spots;
@@ -55,13 +56,13 @@ bool test_array_integrity(test_array_t array, size_t expected_iterations) {
 test_array_t create_test_array(const config_t *config) {
     int stride_in_cell = config->stride / sizeof(cell_t);
     assert(config->stride > stride_in_cell);
-    size_t test_array_size = ((size_t)config->spots) * stride_in_cell + 4096;
+    size_t test_array_size = ((size_t)config->spots) * stride_in_cell + 4096 + config->offset;
     cell_t *arr = calloc(test_array_size, sizeof(cell_t));
     if (!arr) {
         perror("calloc");
         exit(1);
     }
-    size_t misalignment = (size_t)arr % 4096;
+    size_t misalignment = (size_t)arr % 4096 + config->offset;
  
     int n = config->spots - 1;
     long *temp_indices = malloc((n > 0 ? n : 1) * sizeof(long));
@@ -114,7 +115,8 @@ double experiment_run(const config_t *config) {
 
 
 double experiment_run_with(int stride, int spots) {
-    config_t config = {.iterations = ITERATIONS, .stride = stride, .spots = spots};
+    size_t offset = rand() % 100 * 4096;
+    config_t config = {.iterations = ITERATIONS, .stride = stride, .spots = spots, .offset = offset};
     return experiment_run(&config);
 }
 
