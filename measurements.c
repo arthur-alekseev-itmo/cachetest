@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
  
 void msmt_to_string(double ratio, char *buf, size_t n) {
     if (ratio < LOW_RATIO) {
@@ -73,6 +74,7 @@ double get_small_time() {
 
 table_t create_measurement_table(int spots_count, int strides_count) {
     double small_time = get_small_time();
+    bool print_table = false;
 
     table_t t = {
         .spots_count = spots_count, 
@@ -88,6 +90,9 @@ table_t create_measurement_table(int spots_count, int strides_count) {
     for (size_t i = 0; i < TABLE_REFINEMENT_ATTEMPTS; i++) {
         printf("Refining measuring table %zu/%d\n", i, TABLE_REFINEMENT_ATTEMPTS);
         refine_measurement_table(&t, spots_count, strides_count, small_time);
+        if (print_table) {
+            print_data_table(&t, stdout);
+        }
     }
     
     return t;

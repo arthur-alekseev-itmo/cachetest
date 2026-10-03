@@ -10,7 +10,7 @@
 void print_entity_location(const entity_location_t *e, FILE *out) {
     char b[32];
     fmt_bytes(16L << e->stride_idx, b, sizeof b);
-    fprintf(out, "Entity: {stride: %s; spots: %d}\n", b, e->spots);
+    fprintf(out, "Entity: {stride: %s; spots: %zu}\n", b, e->spots);
 }
  
 bool different(int prev, int curr) {

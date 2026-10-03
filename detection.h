@@ -6,8 +6,8 @@
 #include "measurements.h"
 
 typedef struct {
-    int stride_idx;
-    int spots;
+    size_t stride_idx;
+    size_t spots;
 } entity_location_t;
  
 void print_entity_location(const entity_location_t *e, FILE *out);

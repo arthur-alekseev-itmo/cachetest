@@ -12,7 +12,7 @@
 int64_t nanosecond_counter(void) {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    return (int64_t)ts.tv_sec * 1000000000LL + ts.tv_nsec;
+    return (int64_t)ts.tv_sec * 1e9 + ts.tv_nsec;
 }
 
 typedef int64_t cell_t;
