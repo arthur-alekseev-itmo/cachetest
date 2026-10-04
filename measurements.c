@@ -62,6 +62,7 @@ void refine_measurement_table(table_t* t, size_t spots_count, size_t strides_cou
 }
 
 double get_small_time() {
+    printf("Reading small time: ");
     double small_time = 1000.;
     for (int i = 0; i < SMALL_VALUE_FINDING_ATTEMPTS; i++) {
         small_time = min(small_time, experiment_run_with(16, 2, ITERATIONS * 2));
@@ -69,12 +70,19 @@ double get_small_time() {
         small_time = min(small_time, experiment_run_with(32, 2, ITERATIONS * 2));
         small_time = min(small_time, experiment_run_with(32, 3, ITERATIONS * 2));
     }
+    printf("%f\n", small_time);
     return small_time;
+}
+
+void clear_lines(size_t count) {
+    for (size_t i = 0; i < count; i++) {
+        printf("\033[A\033[2K");
+    }
 }
 
 table_t create_measurement_table(int spots_count, int strides_count) {
     double small_time = get_small_time();
-    bool print_table = false;
+    bool print_table = true;
 
     table_t t = {
         .spots_count = spots_count, 
@@ -88,10 +96,16 @@ table_t create_measurement_table(int spots_count, int strides_count) {
     }
 
     for (size_t i = 0; i < TABLE_REFINEMENT_ATTEMPTS; i++) {
-        printf("Refining measuring table %zu/%d\n", i, TABLE_REFINEMENT_ATTEMPTS);
+        
         refine_measurement_table(&t, spots_count, strides_count, small_time);
+        if (i != 0) {
+            size_t line_clear_count = print_table ? spots_count + 2 : 1;
+            clear_lines(line_clear_count);
+        }
+        printf("Refining measuring table %zu/%d\n", i + 1, TABLE_REFINEMENT_ATTEMPTS);
         if (print_table) {
             print_data_table(&t, stdout);
+            fflush(stdout);
         }
     }
     

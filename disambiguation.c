@@ -72,6 +72,7 @@ size_t detect_line_size(size_t capacity, size_t max_stride) {
     for (size_t stride = 16; stride <= max_stride; stride *= 2) {
         trend_t t = trend_for(stride, capacity);
         printf("Stride=%zu: %s\n", stride, t == Decrease ? "Decrease" : t == Increase ? "Increase" : "Flat");
+        printf("\033[A\033[2K");
         if (t == Decrease) seen_decrease = 1;
         if (t == Increase) {
             return seen_decrease ? stride / 2 : 0;
