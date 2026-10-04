@@ -1,25 +1,18 @@
+#include "disambiguation.h"
 #include "experiment.h"
 #include "measurements.h"
-#include "utils.h"
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-#define ATTEMPT_COUNT 4
+
+#define MEASUREMENT_COUNT 4
 
 typedef enum {
     Decrease,
     Increase,
     Flat
 } trend_t;
-
-double measure_min(size_t stride, size_t spots) {
-    double min_measure = 100000;
-    size_t iterations = ITERATIONS / 10;
-    for (size_t i = 0; i < ATTEMPT_COUNT; i++) {
-        min_measure = min(min_measure, experiment_run_with(stride, spots, iterations));
-    }
-    return min_measure;
-}
 
 size_t jump_for_stride(size_t stride, size_t hi) {
     double time = measure_min(stride, 2);
@@ -44,8 +37,6 @@ trend_t trend_for(size_t stride, size_t capacity) {
     if (jump_no_addition == 0)
         return Flat;
 
-    int decrease_count = 0, increase_count = 0;
-
     size_t addition = stride / 2;
     if (addition < 8 || addition % 8 != 0)
         return Flat;
@@ -55,16 +46,12 @@ trend_t trend_for(size_t stride, size_t capacity) {
         return Flat;
     
     double ratio = (double)jump_addition / (double)jump_no_addition;
-    if (ratio < 2. - LOW_RATIO) decrease_count++;
-    else if (ratio > LOW_RATIO) increase_count++;
-    
-    printf("Stride=%zu Addition=%zu: jump at %zu -> %zu spots (ratio %.2f)\n", stride, addition, jump_no_addition, jump_addition, ratio);
-    if (decrease_count > increase_count) return Decrease;
-    if (increase_count > decrease_count) return Increase;
+    if (ratio < 2. - LOW_RATIO) return Decrease; 
+    else if (ratio > LOW_RATIO) return Increase; 
     return Flat;
 }
 
-size_t detect_line_size(size_t capacity, size_t max_stride) {
+size_t detect_line_size_once(size_t capacity, size_t max_stride) {
     int seen_decrease = 0;
     for (size_t stride = 16; stride <= max_stride; stride *= 2) {
         trend_t t = trend_for(stride, capacity);
@@ -77,3 +64,25 @@ size_t detect_line_size(size_t capacity, size_t max_stride) {
     }
     return 0;
 }
+
+int compare(const void *a, const void *b) {
+    const size_t arg1 = *(const size_t*)a;
+    const size_t arg2 = *(const size_t*)b;
+    
+    if (arg1 < arg2) return -1;
+    if (arg1 > arg2) return 1;
+    return 0;
+}
+
+
+size_t detect_line_size(size_t capacity, size_t max_stride) {
+    size_t measurements[MEASUREMENT_COUNT];
+    for (size_t i = 0; i < MEASUREMENT_COUNT; i++) {
+        printf("Detecting line size, attempt %zu/%d", i, MEASUREMENT_COUNT);
+        measurements[i] = detect_line_size_once(capacity, max_stride);
+        printf("Got size: %zu\n", measurements[i]);
+    }
+    qsort(measurements, sizeof(measurements) / sizeof(measurements[0]), sizeof(measurements[0]), compare);
+    return measurements[MEASUREMENT_COUNT / 2];
+}
+

@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "utils.h"
 
 #define ASSERT_ALLOCATED(x) if (!(x)) { perror("Failed allocation"); exit(1); }
 
@@ -102,7 +103,7 @@ double experiment_run(const config_t *config) {
 
 
 double experiment_run_with(size_t stride, size_t spots, size_t iterations) {
-    size_t offset = rand() % 100 * 4096;
+    size_t offset = rand() % 1000 * 4096;
     config_t config = {
         .iterations = iterations, 
         .stride = stride, 
@@ -111,6 +112,16 @@ double experiment_run_with(size_t stride, size_t spots, size_t iterations) {
     };
     return experiment_run(&config);
 }
+
+double measure_min(size_t stride, size_t spots) {
+    double min_measure = 100000;
+    size_t iterations = ITERATIONS / 10;
+    for (size_t i = 0; i < ATTEMPT_COUNT; i++) {
+        min_measure = min(min_measure, experiment_run_with(stride, spots, iterations));
+    }
+    return min_measure;
+}
+
 
 
 
