@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#define ATTEMPT_COUNT 10
+#define ATTEMPT_COUNT 4
 
 typedef enum {
     Decrease,
@@ -44,24 +44,21 @@ trend_t trend_for(size_t stride, size_t capacity) {
     if (jump_no_addition == 0)
         return Flat;
 
-    size_t lows[2] = { stride / 2, stride / 4 };
     int decrease_count = 0, increase_count = 0;
 
-    for (size_t k = 0; k < 2; k++) {
-        size_t addition = lows[k];
-        if (addition < 8 || addition % 8 != 0)
-            continue;
-        
-        size_t jump_addition = jump_for_stride(stride + addition, hi);
-        if (jump_addition == 0)
-            continue;
-        
-        double ratio = (double)jump_addition / (double)jump_no_addition;
-        if (ratio < 2. - LOW_RATIO) decrease_count++;
-        else if (ratio > LOW_RATIO) increase_count++;
-
-        printf("Stride=%zu Addition=%zu: jump at %zu -> %zu spots (ratio %.2f)\n", stride, addition, jump_no_addition, jump_addition, ratio);
-    }
+    size_t addition = stride / 2;
+    if (addition < 8 || addition % 8 != 0)
+        return Flat;
+    
+    size_t jump_addition = jump_for_stride(stride + addition, hi);
+    if (jump_addition == 0)
+        return Flat;
+    
+    double ratio = (double)jump_addition / (double)jump_no_addition;
+    if (ratio < 2. - LOW_RATIO) decrease_count++;
+    else if (ratio > LOW_RATIO) increase_count++;
+    
+    printf("Stride=%zu Addition=%zu: jump at %zu -> %zu spots (ratio %.2f)\n", stride, addition, jump_no_addition, jump_addition, ratio);
     if (decrease_count > increase_count) return Decrease;
     if (increase_count > decrease_count) return Increase;
     return Flat;
