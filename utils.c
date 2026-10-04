@@ -15,7 +15,7 @@ void fmt_bytes(size_t size, char *buf, size_t n) {
         size /= 1024;
     }
     const char *name = order < 5 ? names[order] : "?";
-    snprintf(buf, n, "%ld%s", size, name);
+    snprintf(buf, n, "%zu%s", size, name);
 }
 
 void clear_lines(size_t count) {

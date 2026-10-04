@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 
-#define MEASUREMENT_COUNT 1
+#define MEASUREMENT_COUNT 10
 
 typedef enum {
     Decrease,

@@ -2,7 +2,7 @@
 
 #define LOW_RATIO 1.06
 #define HIGH_RATIO 1.15
-#define TABLE_REFINEMENT_ATTEMPTS 8
+#define TABLE_REFINEMENT_ATTEMPTS 16
 
 #include <stdlib.h>
 #include <stdio.h>

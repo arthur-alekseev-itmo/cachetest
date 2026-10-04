@@ -1,7 +1,7 @@
 #pragma once
 
 #define ATTEMPT_COUNT 8
-#define ITERATIONS 1000000
+#define ITERATIONS 2000000
 #define SMALL_VALUE_FINDING_ATTEMPTS 64
 
 

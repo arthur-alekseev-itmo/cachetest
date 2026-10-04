@@ -63,7 +63,6 @@ void refine_measurement_table(table_t* t, size_t spots_count, size_t strides_cou
         }
     }
 }
-\
 
 table_t create_measurement_table(int spots_count, int strides_count) {
     double small_time = get_small_time();

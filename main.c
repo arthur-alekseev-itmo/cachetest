@@ -30,7 +30,7 @@ int main(void) {
         }
         char capacity_s[32];
         fmt_bytes(capacity, capacity_s, sizeof(capacity_s));
-        printf("\nEntity characteristics:\n- capacity: %s\n- associativiy: %zu\n- line size: %zu\n\n", capacity_s, entity.spots, cache_line_size);
+        printf("\nEntity characteristics:\n- capacity: %s\n- associativity: %zu\n- line size: %zu\n\n", capacity_s, entity.spots, cache_line_size);
     }
 
     free(entities);
