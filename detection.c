@@ -22,16 +22,18 @@ bool check_entity(entity_location_t entity) {
     print_entity_location(&entity, stdout);
     size_t spots = entity.spots;
     double small_time = get_small_time();
+    size_t errors = 0;
     for (size_t stride_idx = entity.stride_idx; stride_idx > 1; stride_idx--) {
         size_t stride = 16 << stride_idx;
-        double msmt_above = measure_min(stride, spots, 64) / small_time;
-        double msmt_within = measure_min(stride, spots + 1, 64) / small_time;
+        double msmt_above = measure_min(stride, spots, 512) / small_time;
+        double msmt_within = measure_min(stride, spots + 1, 512) / small_time;
         if (stride_idx != entity.stride_idx) {
             clear_lines(1);
         }
         printf("Moving to stride %zu and spots %zu, above: %f, within: %f\n", stride, spots, msmt_above, msmt_within);
         size_t entity_valid = msmt_above < msmt_within;
-        if (!entity_valid) {
+        errors += !entity_valid;
+        if (errors > 1) {
             clear_lines(2);
             printf("Entity was fake\n\n");
             return false;

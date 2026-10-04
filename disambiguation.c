@@ -81,7 +81,7 @@ size_t detect_line_size(size_t capacity, size_t max_stride) {
     printf("\nDetecting cache line size\n");
     size_t prev_msmt = detect_line_size_once(capacity, max_stride);
     size_t current_msmt = detect_line_size_once(capacity, max_stride);
-    while (prev_msmt != current_msmt) { 
+    while (prev_msmt != current_msmt && current_msmt != 0) { 
         prev_msmt = current_msmt;
         current_msmt = detect_line_size(capacity, max_stride);
     }
