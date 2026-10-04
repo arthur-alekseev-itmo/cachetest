@@ -1,7 +1,9 @@
 #pragma once
 
 #define ATTEMPT_COUNT 8
-#define ITERATIONS 8192
+#define ITERATIONS 1000000
+#define SMALL_VALUE_FINDING_ATTEMPTS 64
+
 
 #include <stdint.h>
 #include <stddef.h>
@@ -17,4 +19,6 @@ double experiment_run(const config_t *config);
 
 double experiment_run_with(size_t stride, size_t spots, size_t iterations);
 
-double measure_min(size_t stride, size_t spots);
+double measure_min(size_t stride, size_t spots, size_t min_from);
+
+double get_small_time();

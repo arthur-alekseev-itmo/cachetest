@@ -86,16 +86,15 @@ void run_through_array(volatile test_array_t array, size_t end_iteration) {
 
 double experiment_run(const config_t *config) {
     test_array_t array = create_test_array(config);
-    size_t end_iteration = (long)config->spots * config->iterations;
  
     run_through_array(array, config->spots * 8); /* Warmup */
 
     int64_t time_start = nanosecond_counter();
-    run_through_array(array, end_iteration);
+    run_through_array(array, config->iterations);
     int64_t time_end = nanosecond_counter();
  
     double time_diff = (double)(time_end - time_start);
-    double avg_time = time_diff / config->spots / config->iterations;
+    double avg_time = time_diff / config->iterations;
 
     free(array.array);
     return avg_time;
@@ -113,15 +112,29 @@ double experiment_run_with(size_t stride, size_t spots, size_t iterations) {
     return experiment_run(&config);
 }
 
-double measure_min(size_t stride, size_t spots) {
+double measure_min(size_t stride, size_t spots, size_t min_from) {
     double min_measure = 100000;
     size_t iterations = ITERATIONS / 10;
-    for (size_t i = 0; i < ATTEMPT_COUNT; i++) {
+    for (size_t i = 0; i < min_from; i++) {
         min_measure = min(min_measure, experiment_run_with(stride, spots, iterations));
     }
     return min_measure;
 }
 
+double get_small_time() {
+    double small_time = 1000.;
+    for (int i = 0; i < SMALL_VALUE_FINDING_ATTEMPTS; i++) {
+        small_time = min(small_time, experiment_run_with(16, 2, ITERATIONS * 2));
+        small_time = min(small_time, experiment_run_with(16, 3, ITERATIONS * 2));
+        small_time = min(small_time, experiment_run_with(32, 2, ITERATIONS * 2));
+        small_time = min(small_time, experiment_run_with(32, 3, ITERATIONS * 2));
+        if (i != 0) {
+            clear_lines(1);
+        }
+        printf("Reading small time: %f\n", small_time);
+    }
+    return small_time;
+}
 
 
 

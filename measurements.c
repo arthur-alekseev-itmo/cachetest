@@ -11,6 +11,9 @@
 #include <stdbool.h>
  
 void msmt_to_string(double ratio, char *buf, size_t n) {
+    // For prettier printing results
+    ratio = ratio > 9.99 ? 9.99 : ratio;
+
     if (ratio < LOW_RATIO) {
         snprintf(buf, n, "%4.2f", ratio);
         return;
@@ -49,7 +52,7 @@ void refine_measurement_table(table_t* t, size_t spots_count, size_t strides_cou
         for (size_t spots_idx = 0; spots_idx < spots_count; spots_idx++) {
             size_t stride = 16 << stride_idx;
             size_t spots = spots_idx + 1;
-            double result = experiment_run_with(stride, spots, ITERATIONS);
+            double result = experiment_run_with(stride, spots, ITERATIONS / 2);
             double x = result / small_time;
             double current_val = VAL(t, stride_idx, spots_idx);
             if (current_val <= 0.01f) {
@@ -60,28 +63,7 @@ void refine_measurement_table(table_t* t, size_t spots_count, size_t strides_cou
         }
     }
 }
-
-void clear_lines(size_t count) {
-    for (size_t i = 0; i < count; i++) {
-        printf("\033[A\033[2K");
-    }
-}
-
-
-double get_small_time() {
-    double small_time = 1000.;
-    for (int i = 0; i < SMALL_VALUE_FINDING_ATTEMPTS; i++) {
-        small_time = min(small_time, experiment_run_with(16, 2, ITERATIONS * 2));
-        small_time = min(small_time, experiment_run_with(16, 3, ITERATIONS * 2));
-        small_time = min(small_time, experiment_run_with(32, 2, ITERATIONS * 2));
-        small_time = min(small_time, experiment_run_with(32, 3, ITERATIONS * 2));
-        if (i != 0) {
-            clear_lines(1);
-        }
-        printf("Reading small time: %f\n", small_time);
-    }
-    return small_time;
-}
+\
 
 table_t create_measurement_table(int spots_count, int strides_count) {
     double small_time = get_small_time();
@@ -99,7 +81,6 @@ table_t create_measurement_table(int spots_count, int strides_count) {
     }
 
     for (size_t i = 0; i < TABLE_REFINEMENT_ATTEMPTS; i++) {
-        
         refine_measurement_table(&t, spots_count, strides_count, small_time);
         if (i != 0) {
             size_t line_clear_count = print_table ? spots_count + 2 : 1;

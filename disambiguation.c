@@ -1,12 +1,13 @@
 #include "disambiguation.h"
 #include "experiment.h"
 #include "measurements.h"
+#include "utils.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 
-#define MEASUREMENT_COUNT 4
+#define MEASUREMENT_COUNT 1
 
 typedef enum {
     Decrease,
@@ -15,16 +16,18 @@ typedef enum {
 } trend_t;
 
 size_t jump_for_stride(size_t stride, size_t hi) {
-    double time = measure_min(stride, 2);
+    double time = measure_min(stride, 2, MEASUREMENT_COUNT);
     double limit = time * HIGH_RATIO;
     
-    if (measure_min(stride, hi) <= limit)
+    if (measure_min(stride, hi, MEASUREMENT_COUNT) <= limit)
         return 0;
     
     size_t lo = 2;
     while (hi - lo > 1) {
+        clear_lines(1);
+        printf("Pinning: %zu %zu\n", hi, lo);
         size_t mid = lo + (hi - lo) / 2;
-        if (measure_min(stride, mid) > limit) hi = mid;
+        if (measure_min(stride, mid, MEASUREMENT_COUNT) > limit) hi = mid;
         else lo = mid;
     }
     return hi;
@@ -56,7 +59,6 @@ size_t detect_line_size_once(size_t capacity, size_t max_stride) {
     for (size_t stride = 16; stride <= max_stride; stride *= 2) {
         trend_t t = trend_for(stride, capacity);
         printf("Stride=%zu: %s\n", stride, t == Decrease ? "Decrease" : t == Increase ? "Increase" : "Flat");
-        printf("\033[A\033[2K");
         if (t == Decrease) seen_decrease = 1;
         if (t == Increase) {
             return seen_decrease ? stride / 2 : 0;
@@ -76,13 +78,13 @@ int compare(const void *a, const void *b) {
 
 
 size_t detect_line_size(size_t capacity, size_t max_stride) {
-    size_t measurements[MEASUREMENT_COUNT];
-    for (size_t i = 0; i < MEASUREMENT_COUNT; i++) {
-        printf("Detecting line size, attempt %zu/%d", i, MEASUREMENT_COUNT);
-        measurements[i] = detect_line_size_once(capacity, max_stride);
-        printf("Got size: %zu\n", measurements[i]);
+    printf("\nDetecting cache line size\n");
+    size_t prev_msmt = detect_line_size_once(capacity, max_stride);
+    size_t current_msmt = detect_line_size_once(capacity, max_stride);
+    while (prev_msmt != current_msmt) { 
+        prev_msmt = current_msmt;
+        current_msmt = detect_line_size(capacity, max_stride);
     }
-    qsort(measurements, sizeof(measurements) / sizeof(measurements[0]), sizeof(measurements[0]), compare);
-    return measurements[MEASUREMENT_COUNT / 2];
+    return current_msmt;
 }
 

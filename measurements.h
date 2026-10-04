@@ -3,7 +3,6 @@
 #define LOW_RATIO 1.06
 #define HIGH_RATIO 1.15
 #define TABLE_REFINEMENT_ATTEMPTS 8
-#define SMALL_VALUE_FINDING_ATTEMPTS 100
 
 #include <stdlib.h>
 #include <stdio.h>

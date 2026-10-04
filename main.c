@@ -11,7 +11,7 @@
 
 
 int main(void) {
-    int spots_count = 32;
+    int spots_count = 33;
     int strides_count = 18;
  
     table_t measurements = create_measurement_table(spots_count, strides_count);
