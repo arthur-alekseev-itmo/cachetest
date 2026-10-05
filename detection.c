@@ -34,7 +34,7 @@ bool check_entity(entity_location_t entity) {
         printf("Moving to stride %zu and spots %zu, above: %f, within: %f\n", stride, spots, msmt_above, msmt_within);
         size_t entity_valid = msmt_above < msmt_within;
         errors += !entity_valid;
-        if (errors > 100) {
+        if (errors > 1) {
             clear_lines(2);
             printf("Entity was fake\n\n");
             return false;
