@@ -7,6 +7,7 @@
 #include <stdbool.h>
 
 #define INVALID_JUMP 65536
+#define TOTAL_DETECTION_ATTEMPTS 4
 
 void print_entity_location(const entity_location_t *e, FILE *out) {
     char b[32];
@@ -33,7 +34,7 @@ bool check_entity(entity_location_t entity) {
         printf("Moving to stride %zu and spots %zu, above: %f, within: %f\n", stride, spots, msmt_above, msmt_within);
         size_t entity_valid = msmt_above < msmt_within;
         errors += !entity_valid;
-        if (errors > 1) {
+        if (errors > 100) {
             clear_lines(2);
             printf("Entity was fake\n\n");
             return false;
@@ -45,7 +46,7 @@ bool check_entity(entity_location_t entity) {
     return true;
 }
 
-entity_location_t *entity_detection_run(const table_t *table, size_t *count) {
+size_t detect_all_entities(const table_t *table, entity_location_t *buffer) {
     printf("\nTrying to detect entities with data from table\n");
     size_t *jumps = malloc(table->strides_count * sizeof(size_t));
     for (size_t s = 0; s < table->strides_count; s++) {
@@ -58,7 +59,6 @@ entity_location_t *entity_detection_run(const table_t *table, size_t *count) {
         }
     }
  
-    entity_location_t *entities = malloc(table->strides_count * sizeof(entity_location_t));
     size_t entity_id = 0;
     for (size_t stride_idx = 1; stride_idx <= table->strides_count - 2; stride_idx++) {
         size_t pj = jumps[stride_idx - 1], cj = jumps[stride_idx], nj = jumps[stride_idx + 1];
@@ -70,13 +70,25 @@ entity_location_t *entity_detection_run(const table_t *table, size_t *count) {
             if (!check_entity(entity_to_check)) {
                 continue;
             }
-            entities[entity_id].spots = cj;
-            entities[entity_id].stride_idx = stride_idx;
+            buffer[entity_id].spots = cj;
+            buffer[entity_id].stride_idx = stride_idx;
             entity_id++;
         }
     }
     free(jumps);
-    *count = entity_id;
-    return entities;
+    return entity_id;
 }
 
+entity_location_t entity_detection_run(const table_t* table) {
+    entity_location_t entities[32];
+    for (size_t attempt = 0; attempt < TOTAL_DETECTION_ATTEMPTS; attempt++) {
+        size_t entity_count = detect_all_entities(table, entities);
+        if (entity_count == 0) {
+            printf("Warning, detected no entites, will retry again");
+            continue;
+        }
+        return entities[0];
+    }
+    printf("We have not found a singular entity for total of %d attempts", TOTAL_DETECTION_ATTEMPTS);
+    exit(1);
+}

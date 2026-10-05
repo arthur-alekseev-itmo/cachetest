@@ -16,24 +16,15 @@ int main(void) {
  
     table_t measurements = create_measurement_table(spots_count, strides_count);
  
-    size_t entity_count;
-    entity_location_t *entities = entity_detection_run(&measurements, &entity_count);
-    printf("Found %zu candidates\n", entity_count);
+    entity_location_t entity = entity_detection_run(&measurements);
 
-    for (int i = entity_count - 1; i >= 0; i--) {
-        entity_location_t entity = entities[i];
-        size_t stride = 16 << entities->stride_idx;
-        size_t capacity = entity.spots * stride;
-        size_t cache_line_size = detect_line_size(capacity, stride);
-        if (cache_line_size == 0) {
-            continue;
-        }
-        char capacity_s[32];
-        fmt_bytes(capacity, capacity_s, sizeof(capacity_s));
-        printf("\nEntity characteristics:\n- capacity: %s\n- associativity: %zu\n- line size: %zu\n\n", capacity_s, entity.spots, cache_line_size);
-    }
+    size_t stride = 16 << entity.stride_idx;
+    size_t capacity = entity.spots * stride;
+    size_t cache_line_size = detect_line_size(capacity, stride);
+    char capacity_s[32];
+    fmt_bytes(capacity, capacity_s, sizeof(capacity_s));
+    printf("\nEntity characteristics:\n- capacity: %s\n- associativity: %zu\n- line size: %zu\n\n", capacity_s, entity.spots, cache_line_size);
 
-    free(entities);
     free(measurements.values);
     return 0;
 }

@@ -12,4 +12,4 @@ typedef struct {
  
 void print_entity_location(const entity_location_t *e, FILE *out);
 
-entity_location_t *entity_detection_run(const table_t *table, size_t *count);
+entity_location_t entity_detection_run(const table_t *table);
